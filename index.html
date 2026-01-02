@@ -1,0 +1,2284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>绒花布色搭配（双侧边拖拽区）</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #f0e6d2;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: env(safe-area-inset-top);
+      padding: 20px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .page-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      width: 640px;
+      min-height: 100vh;
+      position: relative;
+    }
+    .main-page {
+      display: block;
+      width: 100%;
+      position: relative;
+    }
+    .result-page {
+      display: none;
+      width: 100%;
+      min-height: 100vh;
+      overflow: visible;
+      position: relative;
+    }
+
+    .bg-container {
+      width: 640px;
+      height: 1030px;
+      position: relative;
+      background: url("./dipian.jpg") no-repeat 0 0;
+      background-size: 640px 1030px;
+      flex-shrink: 0;
+      margin-bottom: 20px;
+      z-index: 1;
+    }
+
+    /* ========== 音乐图标样式 - 修改为相对于背景图片 ========== */
+    .music-icon {
+      position: absolute; /* 修改为absolute定位，相对于.bg-container */
+      top: 25px; /* 调整位置 */
+      right: 25px;
+      width: 50px;
+      height: 50px;
+      background: url("./music.png") no-repeat center;
+      background-size: contain;
+      z-index: 9999; /* 设置为极高的层级，确保始终在最上层 */
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .music-icon:hover {
+      transform: scale(1.1);
+    }
+
+    .music-icon.music1 {
+      background: url("./music1.png") no-repeat center;
+      background-size: contain;
+    }
+
+    .next-img {
+      position: absolute;
+      top: 685px; 
+      right: 20px; 
+      width: 150px;
+      height: 75px;
+      z-index: 1999;
+      cursor: pointer;
+      background: url("./next.png") no-repeat center;
+      background-size: 100% 100%;
+    }
+
+    .trigger-wrapper {
+      position: absolute;
+      width: 640px;
+      height: 1030px;
+      z-index: 999;
+      pointer-events: auto;
+    }
+    .trigger-side-1 {
+      position: absolute;
+      top: 360px;    
+      left: 180px;   
+      width: 70px;   
+      height: 303px; 
+      border-radius: 4px;
+      pointer-events: auto;
+    }
+    .trigger-side-2 {
+      position: absolute;
+      top: 360px;    
+      right: 175px;   
+      width: 70px;   
+      height: 303px; 
+      border-radius: 4px;
+      pointer-events: auto;
+    }
+    .trigger-middle {
+      position: absolute;
+      top: 355px;    
+      left: 255px;   
+      width: 140px;  
+      height: 310px; 
+      border-radius: 4px;
+      pointer-events: auto;
+    }
+
+    .show-wrapper {
+      position: absolute;
+      width: 640px;
+      height: 1030px;
+      z-index: 998;
+    }
+    .show-side {
+      position: absolute;
+      top: 355px;    
+      left: 168px;   
+      width: 312px;  
+      height: 306px; 
+      opacity: 0;
+      transition: opacity 0.2s ease-out;
+      background-position: 0 0 !important;
+      background-size: 100% 100% !important;
+      background-repeat: no-repeat !important;
+      z-index: 2;
+    }
+    .show-middle {
+      position: absolute;
+      top: 355px;    
+      left: 168px;   
+      width: 312px;  
+      height: 306px; 
+      opacity: 0;
+      transition: opacity 0.2s ease-out;
+      background-position: 0 0 !important;
+      background-size: 100% 100% !important;
+      background-repeat: no-repeat !important;
+      z-index: 1;
+    }
+    .show-active {
+      opacity: 1 !important;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    }
+
+    .thread-wrapper {
+      position: absolute;
+      bottom: 80px;
+      left: 80px;
+      width: 480px;
+      height: 120px;
+      z-index: 1000;
+    }
+    .thread {
+      width: 100px;
+      height: 100px;
+      cursor: grab !important;
+      border-radius: 8px;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      transition: transform 0.2s ease;
+      user-select: none;
+      -webkit-user-drag: element;
+      position: absolute;
+      transform: scale(1);
+      border: 2px solid transparent !important;
+    }
+
+    .thread-yellow {
+      background-image: url("./yellow line.png") !important;
+      left: 5px;
+      top: 50px;
+    }
+    .thread-pink {
+      background-image: url("./pink line.png") !important;
+      left: 190px;
+      top: 0px;
+    }
+    .thread-purple {
+      background-image: url("./purple line.png") !important;
+      left: 370px;
+      top: 50px;
+    }
+
+    .thread:active {
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      border-width: 3px !important;
+      transform: scale(0.95) !important;
+    }
+
+    .side-yellow { background-image: url("./yellow side.png") !important; }
+    .side-pink { background-image: url("./pink side.png") !important; }
+    .side-purple { background-image: url("./purple side.png") !important; }
+    .middle-yellow { background-image: url("./yellow mid.png") !important; }
+    .middle-pink { background-image: url("./pink mid.png") !important; }
+    .middle-purple { background-image: url("./purple mid.png") !important; }
+
+    .cover-touming {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url("./touming.png") no-repeat center;
+      background-size: 640px 1030px;
+      z-index: 2000;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .top-finger {
+      position: absolute;
+      top: 850px;
+      left: 320px;
+      width: 20%;
+      height: 20%;
+      background: url("./finger.png") no-repeat center;
+      background-size: contain;
+      z-index: 3000;
+      pointer-events: none;
+      opacity: 0;
+      animation: fadeIn 1.5s ease-out forwards, handMove 1.5s ease-in-out infinite alternate;
+    }
+
+    .top-character {
+      position: absolute;
+      top: 0px;
+      left: 160px;
+      width: 50%;
+      height: 50%;
+      background: url("./character.png") no-repeat center;
+      background-size: contain;
+      z-index: 3000;
+      pointer-events: none;
+      opacity: 0;
+      animation: fadeIn 1.5s ease-out 0.5s forwards;
+    }
+    
+    .zi-image {
+      position: absolute;
+      top: 680px;
+      left: 43%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: auto;
+      z-index: 2;
+      pointer-events: none;
+    }
+    
+    /* ========== 梳绒步骤的透明提示图片 ========== */
+    .shurong-hint {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: auto;
+      opacity: 0;
+      z-index: 12;
+      display: none;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+    .shurong-hint.active {
+      opacity: 0.5;
+      display: block;
+    }
+    
+    /* ========== 梳绒手指动画 ========== */
+    .shurong-finger {
+      position: absolute;
+      top: 150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 60px;
+      background: url("./finger.png") no-repeat center;
+      background-size: contain;
+      z-index: 13;
+      pointer-events: none;
+      opacity: 0;
+      display: none;
+    }
+    .shurong-finger.active {
+      opacity: 1;
+      display: block;
+      animation: shurongFingerMove 1.5s ease-in-out infinite;
+    }
+    
+    /* ========== 修改透明层样式 ========== */
+    .result-cover-touming {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      
+      /* 关键：确保透明层本身显示且不隐藏子元素 */
+      display: block;
+      visibility: visible !important;
+      opacity: 1 !important;
+      
+      background: url("./touming.png") no-repeat center;
+      background-size: cover;
+      z-index: 2001;
+      pointer-events: auto;
+      cursor: pointer;
+      
+      /* 移除display:none，用opacity控制显示/隐藏 */
+      /* display: none; */  /* 删除这行 */
+    }
+	/* ========== zi2图片最终样式 ========== */
+	#resultCoverTouming .zi2-image {
+	  /* 定位 - 居中显示 */
+	  position: absolute;
+	  top: calc(50% - 80px);
+	  left: 50%;
+	  transform: translate(-50%, -50%);
+	  
+	  /* 如果您想调整位置，比如向上移动一些 */
+	  /* top: calc(50% - 80px); */ /* 向上移动80px */
+	  
+	  /* 尺寸 */
+	  width: 300px;
+	  height: auto;
+	  max-width: 80%;
+	  
+	  /* 显示 */
+	  display: block;
+	  opacity: 1;
+	  visibility: visible;
+	  
+	  /* 层级 */
+	  z-index: 2004;
+	  
+	  /* 交互 */
+	  pointer-events: none;
+	  
+	  /* 重要声明 */
+	  !important; /* 所有属性都需要时添加 */
+	}
+    
+    /* ========== 结果页的手指动画（鬃毛刷到中心两点来回移动） ========== */
+    .result-finger {
+      position: absolute;
+      top: 850px;
+      left: 320px;
+      width: 20%;
+      height: 20%;
+      background: url("./finger.png") no-repeat center;
+      background-size: contain;
+      z-index: 2003;
+      pointer-events: none;
+      opacity: 0;
+      display: none;
+      /* 移除原来的animation，用JS控制 */
+    }
+    
+    /* 移除原来的 resultFingerMove 动画 */
+    /* 
+    @keyframes resultFingerMove {
+      0% {
+        transform: translateY(0);
+      }
+      100% {
+        transform: translateY(-400px);
+      }
+    }
+    */
+    
+    /* 添加新的两点来回移动动画 */
+    @keyframes brushToCenterTwoPoints {
+      0%, 100% {
+        /* 鬃毛刷位置（底部中间偏左） */
+        top: 850px;
+        left: 100px;
+        transform: scale(1);
+      }
+      50% {
+        /* 中心位置 */
+        top: 400px;
+        left: 320px;
+        transform: scale(1.2);
+      }
+    }
+    
+    /* 或者使用transform的版本 */
+    @keyframes brushToCenterTransform {
+      0%, 100% {
+        /* 起始位置 */
+        transform: translate(0, 0);
+      }
+      50% {
+        /* 移动到中心：向左移动220px，向上移动450px */
+        transform: translate(-220px, -450px);
+      }
+    }
+    
+    /* 保持其他动画不变 */
+    @keyframes shurongFingerMove {
+      0% {
+        transform: translateX(-50%) translateY(0);
+      }
+      50% {
+        transform: translateX(-50%) translateY(60px);
+      }
+      100% {
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes handMove {
+      from { transform: translateY(0); }
+      to { transform: translateY(-400px); }
+    }
+
+    .hidden-all {
+      display: none !important;
+    }
+
+    .result-bg-container {
+      position: relative;
+      width: 640px;
+      height: 1030px;
+      overflow: hidden;
+      background: url("rh5/d27e008940a772bf5c6cb903c2a8ce53.jpg") no-repeat center center;
+      background-size: cover;
+      background-position: center 80%;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    /* 中心图片容器 - 统一容器 */
+    .center-img-wrapper {
+      position: absolute;
+      top: 9.5%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 450px;
+      height: auto;
+      z-index: 10;
+      pointer-events: auto; /* 确保可交互 */
+    }
+    
+    /* ========== 1. 中心原始图片 ========== */
+    .result-center-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: auto;
+      opacity: 1;
+      z-index: 10;
+      transition: opacity 3s ease-in-out;
+      display: block; /* 确保显示 */
+    }
+    .result-center-img.fade-out {
+      opacity: 0 !important;
+    }
+    
+    /* ========== 2. 后续图片（after-img）独立样式 ========== */
+    .after-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: auto;
+      opacity: 0;
+      z-index: 11;
+      display: none;
+      transition: opacity 3s ease-in-out;
+    }
+    .after-img.fade-in {
+      opacity: 1 !important;
+    }
+    
+    /* ========== 3. 铜丝覆盖图片独立样式 ========== */
+    .copper-overlay-img {
+      position: absolute;
+      top: 220px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 220px;
+      height: auto;
+      opacity: 0;
+      z-index: 12;
+      display: none;
+      transition: opacity 2s ease-in-out;
+    }
+    .copper-overlay-img.fade-in {
+      opacity: 1 !important;
+    }
+    
+    /* ========== 4. 线排剪后第一类图片（before图片） ========== */
+    .xianpaijian-before-img {
+      position: absolute;
+      top: 400px;
+      left: -30%;
+      width: 500px;
+      height: 180px;
+      opacity: 0;
+      z-index: 13;
+      display: none;
+      transition: opacity 1s ease-in-out;
+    }
+    .xianpaijian-before-img.fade-in {
+      opacity: 1 !important;
+    }
+    
+    /* ========== 5. 透明触发区域（在before图片之上） ========== */
+    .trigger-area-transparent {
+      position: absolute;
+      top: 450px;
+      left: 65%;
+      transform: translateX(-50%);
+      width: 250px;
+      height: 300px;
+      background-color: transparent;
+      z-index: 60;
+      display: none;
+      cursor: pointer;
+    }
+    
+    /* ========== 6. 大线排剪图片 ========== */
+    .xianpaijian-big-img {
+      position: absolute;
+      top: 300px;
+      left: 55%;
+      transform:none;
+      width: 100px;
+      height: auto;
+      opacity: 0;
+      z-index: 70;
+      display: none;
+      cursor: grab;
+      transition: opacity 0.5s ease, transform 0.3s ease;
+      pointer-events: auto;
+    }
+    .xianpaijian-big-img.active {
+      opacity: 1;
+      display: block;
+    }
+    .xianpaijian-big-img.dragging {
+      opacity: 0.7;
+      transform: translateX(-50%) scale(0.95);
+      cursor: grabbing;
+    }
+    
+    /* ========== 7. 最终图片（滑动后显示） ========== */
+    .final-img {
+      position: absolute;
+      top: 490px;
+      left: 35%;
+      transform: translateX(-50%);
+      width: 500px;
+      height: 180px;
+      opacity: 0;
+      z-index: 80;
+      display: none;
+      transition: opacity 1s ease-in-out;
+    }
+   
+    .final-img.fade-in {
+      opacity: 1 !important;
+    }
+
+    .result-yuanpan-img {
+      position: absolute;
+      bottom: -38%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 105%;
+      height: 105%;
+      background: url("rh5/yuanpan.png") no-repeat center bottom;
+      background-size: contain;
+      z-index: 20;
+    }
+
+    .result-tool-wrapper {
+      position: absolute;
+      bottom: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      text-align: center;
+      z-index: 30;
+    }
+
+    .result-tool-container {
+      position: relative;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 30;
+      transform-origin: bottom center;
+    }
+
+    .result-tool-container:nth-child(1) {
+      transform: rotate(0deg) translate(-20px, 15px);
+      margin-right: 5%;
+      --rotate: -0deg;
+      transition: transform 0.5s ease-out;
+    }
+    
+    .result-tool-img {
+      cursor: grab;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      display: block; /* 确保显示 */
+      pointer-events: auto; /* 确保可交互 */
+    }
+    
+    .result-tool-img:active {
+      opacity: 0.7 !important;
+      transform: scale(0.98);
+      cursor: grabbing;
+    }
+    
+    .result-tool-container:nth-child(1) .result-tool-script {
+      width: 70px;
+      height: auto;
+      margin-bottom: 8px;
+      position: relative;
+      left: -60px;
+      top: 140px;
+      transform: rotate(calc(var(--rotate) * -1));
+    }
+    .result-tool-container:nth-child(1) .result-tool-img {
+      width: 120px;
+      height: auto;
+      position: relative;
+      left: -15px;
+      top: 30px;
+      transform: rotate(calc(var(--rotate) * -1));
+    }
+
+    .result-tool-container:nth-child(2) {
+      transform: rotate(0deg) translate(0, 0px);
+      margin: 0 3%;
+      --rotate: 0deg;
+    }
+    .result-tool-container:nth-child(2) .result-tool-script {
+      width: 35px;
+      height: auto;
+      margin-bottom: 5px;
+      position: relative;
+      left: -70px;
+      top: 10px;
+      transform: rotate(calc(var(--rotate) * -1));
+    }
+    .result-tool-container:nth-child(2) .result-tool-img {
+      width: 90px;
+      height: auto;
+      position: relative;
+      left: 0px;
+      top: -50px;
+      transform: rotate(calc(var(--rotate) * -1));
+    }
+
+    .result-tool-container:nth-child(3) {
+      transform: rotate(0deg) translate(15px, -8px);
+      margin-left: 5%;
+      --rotate: 0deg;
+    }
+    .result-tool-container:nth-child(3) .result-tool-script {
+      width: 45px;
+      height: auto;
+      margin-bottom: 10px;
+      position: relative;
+      left: -50px;
+      top: 60px;
+      transform: rotate(calc(var(--rotate) * -1));
+    }
+    .result-tool-container:nth-child(3) .result-tool-img {
+      width: 110px;
+      height: auto;
+      position: relative;
+      left: -25px;
+      top: 25px;
+      transform: rotate(calc(var(--rotate) * -1));
+    }
+
+    .result-flower-fairy-img {
+      position: absolute;
+      bottom: 5%;
+      left: 5%;
+      width: 200px;
+      height: auto;
+      z-index: 25;
+    }
+
+    .result-shurong-img {
+      position: absolute;
+      top: 43%;
+      left: 8%;
+      transform: translateY(-50%);
+      width: 70px;
+      height: auto;
+      z-index: 15;
+      display: block; /* 确保显示 */
+    }
+    
+    /* 结果页的下一步按钮 */
+    .result-next-btn {
+      position: absolute;
+      top: 750px;
+      right: 20px;
+      width: 150px;
+      height: 75px;
+      z-index: 2000;
+      cursor: pointer;
+      background: url("./next.png") no-repeat center;
+      background-size: 100% 100%;
+      display: block; /* 确保显示 */
+      pointer-events: auto; /* 确保可交互 */
+    }
+    .result-next-btn.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div class="main-page" id="mainPage">
+      <div class="bg-container">
+        <!-- 将音乐图标移到背景图片容器内，页面加载时立即显示 -->
+        <div class="music-icon" id="mainMusicIcon"></div>
+        
+        <div class="next-img" id="nextImg"></div>
+        <!-- 布料下方的图片 -->
+        <div class="zi-image">
+          <img src="./zi.png" alt="提示文字">
+        </div>
+        <div class="trigger-wrapper">
+          <div class="trigger-side-1" id="triggerSide1"></div>
+          <div class="trigger-side-2" id="triggerSide2"></div>
+          <div class="trigger-middle" id="triggerMiddle"></div>
+        </div>
+
+        <div class="show-wrapper">
+          <div class="show-side" id="showSide"></div>
+          <div class="show-middle" id="showMiddle"></div>
+        </div>
+
+        <div class="thread-wrapper">
+          <div class="thread thread-yellow" draggable="true" data-type="yellow"></div>
+          <div class="thread thread-pink" draggable="true" data-type="pink"></div>
+          <div class="thread thread-purple" draggable="true" data-type="purple"></div>
+        </div>
+
+        <div class="cover-touming" id="coverTouming">
+		</div>
+        <div class="top-finger" id="finger"></div>
+        <div class="top-character" id="character"></div>
+      </div>
+    </div>
+
+    <div class="result-page" id="resultPage">
+      <div class="result-bg-container">
+        <!-- ========== 新增：结果页透明覆盖层和手指 ========== -->
+        <div class="result-cover-touming" id="resultCoverTouming">
+			<img src="./zi2.png" alt="提示文字2" class="zi2-image" id="zi2Image">
+		</div>
+        <div class="result-finger" id="resultFinger"></div>
+        
+        <!-- 结果页的下一步按钮 -->
+        <div class="result-next-btn" id="resultNextBtn" data-next-url="/绒花1/flower-6/index6.html"></div>
+        
+        <!-- 结果页的音乐图标 -->
+        <div class="music-icon" id="resultMusicIcon"></div>
+        
+        <!-- 重构中心图片区域，添加容器用于重叠显示 -->
+        <div class="center-img-wrapper">
+          <img src="" alt="搭配结果" class="result-center-img" id="resultCenterImg">
+          <img src="" alt="后续图片" class="after-img" id="afterImg">
+          <img src="" alt="铜丝覆盖" class="copper-overlay-img" id="copperOverlayImg">
+          <img src="" alt="线排剪第一类图片" class="xianpaijian-before-img" id="xianpaijianBeforeImg">
+          <!-- ========== 新增：梳绒步骤的透明提示图片 ========== -->
+          <img src="./shurong-hint.png" alt="梳绒提示" class="shurong-hint" id="shurongHint">
+          
+          <!-- ========== 新增：梳绒手指动画 ========== -->
+          <div class="shurong-finger" id="shurongFinger"></div>
+        </div>
+
+        <!-- 透明触发区域（在before图片之上） -->
+        <div class="trigger-area-transparent" id="triggerAreaTransparent"></div>
+        
+        <!-- 大线排剪图片 -->
+        <img src="" alt="大线排剪" class="xianpaijian-big-img" id="xianpaijianBigImg">
+        
+        <!-- 最终图片（滑动后显示） -->
+        <img src="" alt="最终图片" class="final-img" id="finalImg">
+
+        <img src="rh5/shurong.png" alt="绒花" class="result-shurong-img">
+
+        <img src="rh5/flower-fairy.png" alt="花精灵" class="result-flower-fairy-img">
+
+        <div class="result-yuanpan-img"></div>
+
+        <div class="result-tool-wrapper">
+          <div class="result-tool-container" id="zongmaoshuaContainer">
+            <img src="rh5/zongmaoshua-script.png" alt="棕毛刷文字" class="result-tool-script">
+            <img src="rh5/zongmaoshua.png" alt="棕毛刷" class="result-tool-img" id="zongmaoshuaImg" draggable="true">
+          </div>
+          <div class="result-tool-container" id="tongsiContainer">
+            <img src="rh5/tongsi-script.png" alt="铜丝文字" class="result-tool-script">
+            <img src="rh5/tongsi.png" alt="铜丝" class="result-tool-img" id="tongsiImg" draggable="true">
+          </div>
+          <div class="result-tool-container" id="xianpaijianContainer">
+            <img src="rh5/xianpaijian-script.png" alt="线排剪文字" class="result-tool-script">
+            <img src="rh5/xianpaijian.png" alt="线排剪" class="result-tool-img" id="xianpaijianImg" draggable="true">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log('🚀 页面加载完成，开始监听拖拽事件');
+
+    // ====================== 音乐功能代码（添加到最前面） ======================
+    // 1. 创建音频对象（复用缓存）
+    let audio = new Audio('music.mp3');
+    audio.loop = true;
+    audio.volume = 0.8;
+    // 读取上一个页面传递的状态（无则默认暂停）
+    let audioState = JSON.parse(localStorage.getItem('audioState') || '{"isPlaying":false,"icon":"music.png","currentTime":0}');
+
+    // 2. DOM加载完成立即续播
+    document.addEventListener('DOMContentLoaded', function() {
+      // 恢复从上个页面带来的进度
+      if (audioState.currentTime) {
+        audio.currentTime = audioState.currentTime;
+      }
+      // 自动续播（减少停顿）
+      if (audioState.isPlaying) {
+        setTimeout(() => {
+          audio.play().catch(err => {
+            // 浏览器禁止自动播放时，点击后直接切换
+            console.log('需点击图标播放音乐');
+          });
+        }, 0);
+      }
+      
+      // 根据状态设置音乐图标
+      if (audioState.icon.includes('music1.png')) {
+        mainMusicIcon.classList.add('music1');
+        resultMusicIcon.classList.add('music1');
+      } else {
+        mainMusicIcon.classList.remove('music1');
+        resultMusicIcon.classList.remove('music1');
+      }
+    });
+
+    // 3. 音乐图标点击事件
+    function setupMusicIcon(musicIcon) {
+      if (!musicIcon) return;
+      
+      musicIcon.addEventListener('click', function(e) {
+        e.stopPropagation();
+        
+        // 切换图标
+        this.classList.toggle('music1');
+        
+        if (audio.paused) {
+          // 暂停状态 → 播放
+          audio.play();
+          audioState.isPlaying = true;
+          console.log('🎵 播放音乐，图标切换为music1.png，进度：', audio.currentTime.toFixed(2), '秒');
+        } else {
+          // 播放状态 → 暂停
+          audio.pause();
+          audioState.isPlaying = false;
+          console.log('🎵 暂停音乐，图标切换为music.png，进度：', audio.currentTime.toFixed(2), '秒');
+        }
+        
+        // 同步两个页面的音乐图标状态
+        const otherMusicIcon = musicIcon === mainMusicIcon ? resultMusicIcon : mainMusicIcon;
+        if (otherMusicIcon) {
+          if (this.classList.contains('music1')) {
+            otherMusicIcon.classList.add('music1');
+          } else {
+            otherMusicIcon.classList.remove('music1');
+          }
+        }
+        
+        // 保存最新状态（供后续跳转/返回使用）
+        audioState.currentTime = audio.currentTime;
+        audioState.icon = this.classList.contains('music1') ? 'music1.png' : 'music.png';
+        localStorage.setItem('audioState', JSON.stringify(audioState));
+      });
+    }
+    
+    // 初始化音乐图标
+    setupMusicIcon(mainMusicIcon);
+    setupMusicIcon(resultMusicIcon);
+    
+    // 获取DOM元素
+    const triggerSide1 = document.getElementById('triggerSide1');
+    const triggerSide2 = document.getElementById('triggerSide2');
+    const triggerMiddle = document.getElementById('triggerMiddle');
+    const showSide = document.getElementById('showSide');
+    const showMiddle = document.getElementById('showMiddle');
+    const allThreads = document.querySelectorAll('.thread');
+    const coverTouming = document.getElementById('coverTouming');
+    const finger = document.getElementById('finger');
+    const character = document.getElementById('character');
+    const nextImg = document.getElementById('nextImg');
+    const mainPage = document.getElementById('mainPage');
+    const resultPage = document.getElementById('resultPage');
+    const resultCenterImg = document.getElementById('resultCenterImg');
+    const afterImg = document.getElementById('afterImg');
+    const copperOverlayImg = document.getElementById('copperOverlayImg');
+    const xianpaijianBeforeImg = document.getElementById('xianpaijianBeforeImg');
+    const triggerAreaTransparent = document.getElementById('triggerAreaTransparent');
+    const xianpaijianBigImg = document.getElementById('xianpaijianBigImg');
+    const finalImg = document.getElementById('finalImg');
+    const zongmaoshuaImg = document.getElementById('zongmaoshuaImg');
+    const zongmaoshuaContainer = document.getElementById('zongmaoshuaContainer');
+    const tongsiImg = document.getElementById('tongsiImg');
+    const tongsiContainer = document.getElementById('tongsiContainer');
+    const xianpaijianImg = document.getElementById('xianpaijianImg');
+    const xianpaijianContainer = document.getElementById('xianpaijianContainer');
+    const resultShurongImg = document.querySelector('.result-shurong-img');
+    const resultNextBtn = document.getElementById('resultNextBtn');
+    
+    // ========== 新增：梳绒提示元素 ==========
+    const shurongHint = document.getElementById('shurongHint');
+    const shurongFinger = document.getElementById('shurongFinger');
+    
+    // ========== 新增：结果页透明层和手指元素 ==========
+    const resultCoverTouming = document.getElementById('resultCoverTouming');
+    const resultFinger = document.getElementById('resultFinger');
+    
+    // 变量初始化
+    let currentThreadType = '';
+    let isTopHidden = false;
+    const zongmaoshuaOriginalTransform = zongmaoshuaContainer.style.transform || getComputedStyle(zongmaoshuaContainer).transform;
+    const tongsiOriginalTransform = tongsiContainer.style.transform || getComputedStyle(tongsiContainer).transform;
+    const xianpaijianOriginalTransform = xianpaijianContainer.style.transform || getComputedStyle(xianpaijianContainer).transform;
+    
+    // 图片映射
+    const imgMap = {
+      "rh5/pink-purple-pink-before.png": "rh5/pink-purple-pink-after.png",
+      "rh5/yellow-purple-yellow-before.png": "rh5/yellow-purple-yellow-after.png",
+      "rh5/purple-yellow-purple-before.png": "rh5/purple-yellow-purple-after.png",
+      "rh5/pink-yellow-pink-before.png": "rh5/pink-yellow-pink-after.png",
+      "rh5/yellow-pink-yellow-before.png": "rh5/yellow-pink-yellow-after.png",
+      "rh5/purple-pink-purple-before.png": "rh5/purple-pink-purple-after.png"
+    };
+    
+    // 第一类图片映射
+    function getImageNameFromPath(path) {
+        const parts = path.split('/');
+        return parts[parts.length - 1];
+    }
+    
+    const beforeFileNameMap = {
+        "pink-purple-pink-after.png": "p-pu-p-before.png",
+        "pink-yellow-pink-after.png": "p-y-p-before.png",
+        "yellow-pink-yellow-after.png": "y-p-y-before.png",
+        "yellow-purple-yellow-after.png": "y-pu-y-before.png",
+        "purple-yellow-purple-after.png": "pu-y-pu-before.png",
+        "purple-pink-purple-after.png": "pu-p-pu-before.png"
+    };
+    
+    const finalFileNameMap = {
+        "pink-purple-pink-after.png": "p-pu-p-after.png",
+        "pink-yellow-pink-after.png": "p-y-p-after.png",
+        "yellow-pink-yellow-after.png": "y-p-y-after.png",
+        "yellow-purple-yellow-after.png": "y-pu-y-after.png",
+        "purple-yellow-purple-after.png": "pu-y-pu-after.png",
+        "purple-pink-purple-after.png": "pu-p-pu-after.png"
+    };
+    
+    // 常量路径
+    const COPPER_OVERLAY_IMG_PATH = "rh5/tongsifugai.png";
+    const GOUTIAO_IMG_PATH = "rh5/goutiao.png";
+    const JIANRONG_IMG_PATH = "rh5/jianrong.png";
+    const XIANPAIJIAN_BIG_IMG_PATH = "xianpaijian-big.png";
+    
+    // 状态变量
+    let isFadeOutComplete = false;
+    let isCopperOverlaid = false;
+    let isShurongReplaced = false;
+    let isXianpaijianBeforeShown = false;
+    let swipeCount = 0;
+    let fadeStarted = false;
+    let currentOpacity = 1;
+    
+    // 大线排剪滑动相关
+    let isXianpaijianBigActive = false;
+    let isDraggingXianpaijianBig = false;
+    let xianpaijianBigStartY = 0;
+    let currentXianpaijianBigY = 0;
+    let slideCount = 0;
+    const requiredSlides = 30;
+    
+    // 步骤控制
+    let currentStep = 0; // 0:梳绒前, 1:梳绒完成(可点击下一步), 2:铜丝前, 3:铜丝完成(可点击下一步), 4:剪刀前
+    
+    // 结果页透明层是否已隐藏
+    let isResultCoverHidden = false;
+    
+    const canvasState = {
+      side: {
+        color: '',
+        active: false
+      },
+      middle: {
+        color: '',
+        active: false
+      }
+    };
+
+    const colorToImageMap = {
+      "pink-purple": "rh5/purple-pink-purple-before.png",
+      "pink-yellow": "rh5/yellow-pink-yellow-before.png",
+      "purple-yellow": "rh5/yellow-purple-yellow-before.png",
+      "purple-pink": "rh5/pink-purple-pink-before.png",
+      "yellow-pink": "rh5/pink-yellow-pink-before.png",
+      "yellow-purple": "rh5/purple-yellow-purple-before.png"
+    };
+
+    // ========== 功能函数 ==========
+    
+    // 检查颜色是否重复
+    function isColorDuplicate(targetColor) {
+      return canvasState.side.color === targetColor || canvasState.middle.color === targetColor;
+    }
+
+    // 隐藏主页面透明层
+    function hideTopElements() {
+      if (isTopHidden) return;
+      
+      // 获取zi2图片元素
+      const zi2Image = document.getElementById('zi2Image');
+      
+      // 先淡出zi2图片
+      if (zi2Image) {
+        zi2Image.style.opacity = '0';
+      }
+      
+      // 等待淡出动画完成后再隐藏所有元素
+      setTimeout(() => {
+        coverTouming.classList.add('hidden-all');
+        finger.classList.add('hidden-all');
+        character.classList.add('hidden-all');
+        
+        // 同时隐藏zi2图片
+        if (zi2Image) {
+          zi2Image.classList.add('hidden-all');
+        }
+        
+        isTopHidden = true;
+        console.log('✅ 上层元素已隐藏，恢复所有拖拽功能');
+        
+      }, 300); // 与CSS过渡时间一致
+    }
+    
+   // ========== 显示结果页透明层 - 优化版本 ==========
+   function showResultCover() {
+     console.log('🔼 调用 showResultCover()');
+     
+     // 确保resultCoverTouming完全显示
+     resultCoverTouming.style.display = 'block';
+     resultCoverTouming.style.visibility = 'visible';
+     resultCoverTouming.style.opacity = '1';
+     
+     // 显示手指动画 - 使用两点来回移动动画
+     resultFinger.style.display = 'block';
+     resultFinger.style.opacity = '1';
+     
+     // 设置动画属性 - 使用两点移动动画
+     resultFinger.style.animation = 'brushToCenterTwoPoints 2s ease-in-out infinite';
+     
+     // 显示zi2图片
+     const zi2Image = document.getElementById('zi2Image');
+     if (zi2Image) {
+       console.log('📷 找到zi2图片元素');
+       
+       // 先重置所有可能隐藏的样式
+       zi2Image.style.cssText = `
+         display: block !important;
+         visibility: visible !important;
+         opacity: 1 !important;
+         z-index: 2002 !important;
+         position: absolute !important;
+         top: 20% !important;  /* 向上移动一些 */
+         left: 50% !important;
+         transform: translate(-50%, -50%) !important;
+         width: 300px !important;
+         height: auto !important;
+         pointer-events: none !important;
+       `;
+       
+       // 确保图片源正确加载
+       const currentSrc = zi2Image.src;
+       const correctSrc = "./zi2.png";
+       
+       if (!currentSrc || currentSrc.includes('undefined') || !zi2Image.complete) {
+         console.log('🔄 设置/重置zi2图片源:', correctSrc);
+         zi2Image.src = correctSrc;
+       }
+       
+       // 图片加载失败处理
+       zi2Image.onerror = function() {
+         console.error('❌ zi2.png图片加载失败，使用备用方案');
+         zi2Image.style.backgroundColor = 'red';
+         zi2Image.style.border = '3px solid yellow';
+         zi2Image.style.color = 'white';
+         zi2Image.style.textAlign = 'center';
+         zi2Image.style.lineHeight = '150px';
+         zi2Image.innerHTML = 'zi2提示文字';
+       };
+       
+       zi2Image.onload = function() {
+         console.log('✅ zi2.png图片加载成功');
+       };
+     } else {
+       console.error('❌ 未找到zi2Image元素，检查HTML结构！');
+       
+       // 尝试创建并添加
+       const newImg = document.createElement('img');
+       newImg.id = 'zi2Image';
+       newImg.className = 'zi2-image';
+       newImg.src = "./zi2.png";
+       newImg.alt = "提示文字2";
+       newImg.style.cssText = `
+         position: absolute;
+         top: 40%;
+         left: 50%;
+         transform: translate(-50%, -50%);
+         width: 300px;
+         height: auto;
+         display: block;
+         opacity: 1;
+         visibility: visible;
+         z-index: 2002;
+       `;
+       resultCoverTouming.appendChild(newImg);
+       console.log('✨ 已创建并添加zi2Image元素');
+     }
+     
+     isResultCoverHidden = false;
+     console.log('✨ 结果页透明层显示完成，手指动画已启动（两点来回移动）');
+   }
+   
+  // ========== 隐藏结果页透明层 - 优化版本 ==========
+  function hideResultCover() {
+      if (isResultCoverHidden) return;
+      
+      console.log('🔽 调用 hideResultCover()');
+      
+      // 停止手指动画
+      resultFinger.style.animation = 'none';
+      resultFinger.style.display = 'none';
+      
+      // 获取zi2图片元素
+      const zi2Image = document.getElementById('zi2Image');
+      
+      // 先添加淡出效果
+      resultCoverTouming.style.transition = 'opacity 0.3s ease';
+      resultCoverTouming.style.opacity = '0';
+      
+      if (zi2Image) {
+          zi2Image.style.transition = 'opacity 0.3s ease';
+          zi2Image.style.opacity = '0';
+      }
+      
+      // 等待淡出动画完成后添加隐藏类
+      setTimeout(() => {
+          // 使用CSS类来完全隐藏
+          resultCoverTouming.classList.add('hidden-all');
+          
+          if (zi2Image) {
+              zi2Image.classList.add('hidden-all');
+          }
+          
+          isResultCoverHidden = true;
+          console.log('✅ 结果页透明层已隐藏（带淡出效果）');
+      }, 100);
+  }
+  
+    function showShurongHint() {
+      console.log('✨ 显示梳绒提示和手指动画');
+      
+      // 显示透明提示图片
+      setTimeout(() => {
+        shurongHint.classList.add('active');
+        console.log('🖼️ 梳绒提示图片已显示');
+      }, 300);
+      
+      // 显示手指动画
+      setTimeout(() => {
+        shurongFinger.classList.add('active');
+        console.log('👆 梳绒手指动画已显示');
+      }, 600);
+    }
+
+    // 隐藏梳绒提示
+    function hideShurongHint() {
+      shurongHint.classList.remove('active');
+      shurongFinger.classList.remove('active');
+      console.log('🙈 梳绒提示和手指动画已隐藏');
+    }
+
+    // ========== 事件监听 ==========
+    
+    // 点击主页面透明覆盖层
+    coverTouming.addEventListener('click', hideTopElements);
+    
+    // 点击结果页透明覆盖层
+    resultCoverTouming.addEventListener('click', hideResultCover);
+    
+    // 拖拽线团时隐藏主页面透明层
+    allThreads.forEach(thread => {
+      thread.addEventListener('dragstart', hideTopElements);
+    });
+    
+    // 拖拽工具时隐藏结果页透明层
+    [zongmaoshuaImg, tongsiImg, xianpaijianImg].forEach(tool => {
+      tool.addEventListener('dragstart', hideResultCover);
+    });
+
+    // 防抖函数
+    let isUpdating = false;
+    const debounce = (fn, delay = 100) => {
+      let timer;
+      return (...args) => {
+        if (isUpdating) return;
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          isUpdating = true;
+          fn(...args);
+          isUpdating = false;
+        }, delay);
+      };
+    };
+
+    // 更新侧边画布
+    function updateSideCanvas(color) {
+      if (isColorDuplicate(color)) {
+        console.log(`❌ 禁止重复：侧边无法设置已存在的${color}颜色`);
+        return;
+      }
+      showSide.classList.remove(`side-yellow`, `side-pink`, `side-purple`);
+      showSide.classList.add(`side-${color}`, 'show-active');
+      canvasState.side.color = color;
+      canvasState.side.active = true;
+      console.log(`✅ 更新侧边颜色为：${color}`);
+    }
+
+    // 更新中间画布
+    function updateMiddleCanvas(color) {
+      if (isColorDuplicate(color)) {
+        console.log(`❌ 禁止重复：中间无法设置已存在的${color}颜色`);
+        return;
+      }
+      showMiddle.classList.remove(`middle-yellow`, `middle-pink`, `middle-purple`);
+      showMiddle.classList.add(`middle-${color}`, 'show-active');
+      canvasState.middle.color = color;
+      canvasState.middle.active = true;
+      console.log(`✅ 更新中间颜色为：${color}`);
+    }
+
+    const debounceUpdateSide = debounce(updateSideCanvas);
+    const debounceUpdateMiddle = debounce(updateMiddleCanvas);
+
+    // 线团拖拽事件
+    allThreads.forEach(thread => {
+      thread.addEventListener('dragstart', (e) => {
+        currentThreadType = e.target.dataset.type;
+        e.dataTransfer.setData('text', currentThreadType);
+        console.log(`👉 开始拖拽：${currentThreadType}线团`);
+      });
+    });
+
+    // 允许放置
+    function allowDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    triggerSide1.addEventListener('dragover', allowDrop);
+    triggerSide2.addEventListener('dragover', allowDrop);
+    triggerMiddle.addEventListener('dragover', allowDrop);
+
+    // 侧边区域放置
+    triggerSide1.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (currentThreadType) debounceUpdateSide(currentThreadType);
+    });
+
+    triggerSide2.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (currentThreadType) debounceUpdateSide(currentThreadType);
+    });
+
+    // 中间区域放置
+    triggerMiddle.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (currentThreadType) debounceUpdateMiddle(currentThreadType);
+    });
+
+    // 全局拖拽事件
+    document.addEventListener('drop', (e) => {
+      e.preventDefault();
+    });
+    document.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+    document.addEventListener('dragend', () => {
+      currentThreadType = '';
+    });
+
+    // ==================== 修复：切换到结果页的正确版本 ====================
+    // 修复结果页功能不可用的问题
+    
+    // 切换到结果页 - 修复版本
+    function switchToResultPage() {
+      const sideColor = canvasState.side.color;
+      const middleColor = canvasState.middle.color;
+      if (!sideColor || !middleColor) {
+        return;
+      }
+    
+      const key = `${middleColor}-${sideColor}`;
+      const imgSrc = colorToImageMap[key] || '';
+      if (imgSrc) {
+        // 只重置必要的图片源，不隐藏任何元素
+        resultCenterImg.src = imgSrc;
+        resultCenterImg.classList.remove('fade-out');
+        resultCenterImg.style.opacity = '1';
+        
+        // 只重置after图片的源，不改变显示状态
+        afterImg.src = '';
+        afterImg.classList.remove('fade-in');
+        afterImg.style.opacity = '0';
+        
+        // 只重置其他图片的源，不改变显示状态
+        copperOverlayImg.src = '';
+        copperOverlayImg.classList.remove('fade-in');
+        copperOverlayImg.style.opacity = '0';
+        
+        xianpaijianBeforeImg.src = '';
+        xianpaijianBeforeImg.classList.remove('fade-in');
+        xianpaijianBeforeImg.style.opacity = '0';
+        
+        xianpaijianBigImg.src = '';
+        xianpaijianBigImg.classList.remove('active', 'dragging');
+        
+        finalImg.src = '';
+        finalImg.classList.remove('fade-in');
+        finalImg.style.opacity = '0';
+        
+        // 重置梳绒图片
+        resultShurongImg.src = "rh5/shurong.png";
+        
+        // 重置状态变量
+        isFadeOutComplete = false;
+        isCopperOverlaid = false;
+        isShurongReplaced = false;
+        isXianpaijianBeforeShown = false;
+        isXianpaijianBigActive = false;
+        isDraggingXianpaijianBig = false;
+        swipeCount = 0;
+        slideCount = 0;
+        fadeStarted = false;
+        currentOpacity = 1;
+        
+        // 隐藏梳绒提示
+        hideShurongHint();
+        
+        // 重置步骤
+        currentStep = 0;
+        resultNextBtn.classList.remove('active');
+        console.log('🔄 进入结果页，初始步骤：梳绒前');
+        
+        // 先切换页面
+        mainPage.style.display = 'none';
+        resultPage.style.display = 'block';
+        window.scrollTo(0, 0);
+        
+        // 确保结果页的所有元素都是可见和可交互的
+        setTimeout(() => {
+          console.log('⏰ 页面切换完成，初始化结果页功能');
+          
+          // 确保所有工具元素可见可交互
+          [zongmaoshuaImg, tongsiImg, xianpaijianImg].forEach(tool => {
+            tool.style.display = 'block';
+            tool.style.visibility = 'visible';
+            tool.style.opacity = '1';
+            tool.style.pointerEvents = 'auto';
+          });
+          
+          // 确保中心图片可见
+          resultCenterImg.style.display = 'block';
+          resultCenterImg.style.visibility = 'visible';
+          
+          // 确保结果页按钮可见
+          resultNextBtn.style.display = 'block';
+          resultNextBtn.style.visibility = 'visible';
+          
+          // 确保透明区域可见
+          triggerAreaTransparent.style.display = 'none'; // 初始隐藏
+          
+          // 确保大线排剪初始隐藏
+          xianpaijianBigImg.style.display = 'none';
+          
+          // 确保最终图片初始隐藏
+          finalImg.style.display = 'none';
+          
+          // 显示透明层（引导用户点击）
+          showResultCover();
+          
+          console.log('✅ 结果页所有功能元素已正确初始化');
+        }, 50);
+        
+      } else {
+        alert('暂无对应的搭配图片！');
+        mainPage.style.display = 'none';
+        resultPage.style.display = 'block';
+        window.scrollTo(0, 0);
+      }
+    }
+    
+    // 下一步按钮点击事件
+    nextImg.addEventListener('click', switchToResultPage);
+
+    // ========== 梳绒步骤逻辑 ==========
+    
+    // 棕毛刷拖拽开始
+    zongmaoshuaImg.addEventListener('dragstart', (e) => {
+      if (currentStep > 0) {
+        e.preventDefault();
+        console.log('❌ 梳绒已完成，请点击下一步');
+        return;
+      }
+      
+      // 隐藏梳绒提示
+      hideShurongHint();
+      
+      e.dataTransfer.setData('text/plain', 'zongmaoshua');
+      e.dataTransfer.effectAllowed = 'move';
+      console.log('👉 开始拖拽棕毛刷');
+    });
+    
+    const centerImgWrapper = document.querySelector('.center-img-wrapper');
+    
+    // 进入绒布区域
+    centerImgWrapper.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      if (!resultCenterImg.src) return;
+      console.log('🖌️ 棕毛刷进入绒布区域');
+    });
+    
+    // 滑动检测
+    let lastY = 0;
+    centerImgWrapper.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      
+      if (!resultCenterImg.src || fadeStarted) return;
+      
+      const currentY = e.clientY;
+      
+      if (lastY !== 0 && Math.abs(currentY - lastY) > 30) {
+        swipeCount++;
+        console.log(`↕️ 滑动检测到第 ${swipeCount} 次滑动`);
+        
+        if (swipeCount >= 1 && !fadeStarted) {
+          startFadeOut();
+        }
+        
+        lastY = currentY;
+      }
+      
+      if (lastY === 0) {
+        lastY = currentY;
+      }
+    });
+    
+    // 开始淡出效果
+    function startFadeOut() {
+      if (fadeStarted) return;
+      
+      fadeStarted = true;
+      
+      const currentCenterSrc = resultCenterImg.src.split('/').pop() ? 
+        `rh5/${resultCenterImg.src.split('/').pop()}` : resultCenterImg.src;
+      const afterSrc = imgMap[currentCenterSrc];
+      if (!afterSrc) return;
+      
+      afterImg.src = afterSrc;
+      afterImg.style.display = 'block';
+      
+      console.log('✨ 开始缓慢淡出效果'); 
+      
+      currentOpacity = 1;
+      const fadeInterval = setInterval(() => {
+        currentOpacity -= 0.1;
+        
+        if (currentOpacity <= 0) {
+          clearInterval(fadeInterval);
+          currentOpacity = 0;
+          
+          resultCenterImg.classList.add('fade-out');
+          afterImg.classList.add('fade-in');
+          
+          isFadeOutComplete = true;
+          
+          if (!isShurongReplaced) {
+            resultShurongImg.src = GOUTIAO_IMG_PATH;
+            isShurongReplaced = true;
+            console.log('🔄 梳绒图片已替换为 goutiao.png');
+          }
+          
+          // 梳绒完成，显示下一步按钮
+          currentStep = 1;
+          resultNextBtn.classList.add('active');
+          console.log('✅ 梳绒完成，下一步按钮已激活');
+          
+          setTimeout(() => {
+            zongmaoshuaContainer.style.transform = zongmaoshuaOriginalTransform;
+            console.log('✅ 淡出效果完成，棕毛刷已归位');
+          }, 500);
+        } else {
+          resultCenterImg.style.opacity = currentOpacity;
+          afterImg.style.opacity = 1 - currentOpacity;
+        }
+      }, 200);
+    }
+    
+    // 离开绒布区域
+    centerImgWrapper.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      lastY = 0;
+    });
+    
+    // 放置棕毛刷
+    centerImgWrapper.addEventListener('drop', (e) => {
+      e.preventDefault();
+      
+      if (!resultCenterImg.src) return;
+      
+      if (!fadeStarted && swipeCount >= 3) {
+        startFadeOut();
+      }
+      
+      lastY = 0;
+    });
+    
+    // 拖拽结束
+    document.addEventListener('dragend', (e) => {
+      lastY = 0;
+      
+      if (!fadeStarted || (fadeStarted && currentOpacity <= 0)) {
+        zongmaoshuaContainer.style.transform = zongmaoshuaOriginalTransform;
+        console.log('↩️ 棕毛刷拖拽结束，已归位');
+      }
+      
+      if (!fadeStarted) {
+        swipeCount = 0;
+      }
+    });
+    
+    // ========== 结果页下一步按钮点击事件 ==========
+    resultNextBtn.addEventListener('click', function(e) {
+        e.preventDefault(); // 防止默认行为
+        
+        if (currentStep === 1) {
+            // 从梳绒完成到铜丝步骤
+            console.log('🔄 点击下一步：进入铜丝步骤');
+            currentStep = 2;
+            resultNextBtn.classList.remove('active');
+            
+        } else if (currentStep === 3) {
+            // 从铜丝完成到剪刀步骤
+            console.log('🔄 点击下一步：进入剪刀步骤');
+            currentStep = 4;
+            resultNextBtn.classList.remove('active');
+            
+        } else if (currentStep === 99) {
+            // 最后一步：跳转到下一个页面
+            console.log('🎉 所有步骤已完成！跳转到下一页面');
+            
+            // 获取用户选择的颜色组合
+            const sideColor = canvasState.side.color;  // 边缘颜色
+            const middleColor = canvasState.middle.color; // 中心颜色
+            
+            console.log(`🎨 用户选择的颜色：中心=${middleColor}, 边缘=${sideColor}`);
+            
+            // 获取下一页面URL
+            let nextPageUrl = this.getAttribute('data-next-url') || "/绒花/flower-6/index6.html";
+            
+            // 修复路径格式（将反斜杠替换为正斜杠）
+            nextPageUrl = nextPageUrl.replace(/\\/g, '/');
+            
+            // 添加颜色参数到URL
+            const separator = nextPageUrl.includes('?') ? '&' : '?';
+            nextPageUrl = `${nextPageUrl}${separator}mid=${middleColor}&side=${sideColor}`;
+            
+            console.log('🔍 当前页面URL:', window.location.href);
+            console.log('🔍 目标页面URL:', nextPageUrl);
+            
+            // 保存当前音乐状态，以便下一页继续播放
+            audioState.currentTime = audio.currentTime;
+            audioState.isPlaying = !audio.paused;
+            audioState.icon = mainMusicIcon.classList.contains('music1') ? 'music1.png' : 'music.png';
+            localStorage.setItem('audioState', JSON.stringify(audioState));
+            
+            // 同时保存到localStorage作为备用
+            try {
+                // 保存颜色信息到localStorage
+                localStorage.setItem('midColor', middleColor);
+                localStorage.setItem('sideColor', sideColor);
+                
+                // 保存图片路径到localStorage（如果还需要）
+                if (afterImg.src) {
+                    const fileName = getImageNameFromPath(afterImg.src);
+                    const savedImagePath = `rh5/${fileName}`;
+                    localStorage.setItem('previousFlowerImage', savedImagePath);
+                    console.log('💾 保存图片路径到localStorage:', savedImagePath);
+                }
+                
+                console.log('💾 颜色信息已保存到localStorage');
+            } catch (e) {
+                console.warn('⚠️ 保存到localStorage失败:', e);
+            }
+            
+            // 尝试跳转
+            try {
+                console.log('🚀 跳转到下一个页面');
+                window.location.href = nextPageUrl;
+                
+            } catch (error) {
+                console.error('❌ 跳转失败:', error);
+                
+                // 备用方案：尝试相对路径跳转
+                try {
+                    const baseUrl = '../flower-6/index6.html';
+                    const backupUrl = `${baseUrl}?mid=${middleColor}&side=${sideColor}`;
+                    console.log('🚀 尝试备用路径:', backupUrl);
+                    window.location.href = backupUrl;
+                } catch (error2) {
+                    console.error('❌ 备用路径也失败:', error2);
+                    alert('页面跳转失败，请检查网络连接或联系管理员');
+                }
+            }
+        }
+    });
+    
+    // ========== 铜丝覆盖功能 ==========
+    
+    // 铜丝拖拽开始
+    tongsiImg.addEventListener('dragstart', (e) => {
+      if (currentStep < 2) {
+        e.preventDefault();
+        console.log('❌ 请先完成梳绒并点击下一步，再使用铜丝');
+        return;
+      }
+      
+      if (currentStep > 2) {
+        e.preventDefault();
+        console.log('❌ 铜丝已完成，请点击下一步');
+        return;
+      }
+      
+      if (isCopperOverlaid) {
+        e.preventDefault();
+        console.log('❌ 铜丝已经覆盖过了');
+        return;
+      }
+      
+      e.dataTransfer.setData('text/plain', 'tongsi');
+      e.dataTransfer.effectAllowed = 'move';
+      console.log('👉 开始拖拽铜丝');
+    });
+    
+    // 铜丝放置
+    centerImgWrapper.addEventListener('drop', (e) => {
+      e.preventDefault();
+      
+      const toolType = e.dataTransfer.getData('text/plain');
+      
+      if (toolType === 'tongsi' && isFadeOutComplete && !isCopperOverlaid && currentStep === 2) {
+        console.log('🔧 放置铜丝到绒布上');
+        
+        copperOverlayImg.src = COPPER_OVERLAY_IMG_PATH;
+        copperOverlayImg.style.display = 'block';
+        
+        setTimeout(() => {
+          copperOverlayImg.classList.add('fade-in');
+          console.log('✨ 铜丝覆盖图片开始淡入');
+          
+          isCopperOverlaid = true;
+          tongsiContainer.style.transform = tongsiOriginalTransform;
+          
+          // 铜丝覆盖完成，显示下一步按钮
+          currentStep = 3;
+          resultNextBtn.classList.add('active');
+          console.log('✅ 铜丝覆盖完成，下一步按钮已激活');
+          
+        }, 100);
+      }
+    });
+    
+    // 铜丝拖拽结束
+    tongsiImg.addEventListener('dragend', (e) => {
+      if (!isCopperOverlaid) {
+        tongsiContainer.style.transform = tongsiOriginalTransform;
+        console.log('↩️ 铜丝拖拽结束，已归位');
+      }
+    });
+    
+    // ========== 线排剪拖拽功能（第一次拖动）==========
+    
+    // 线排剪拖拽开始（第一次）
+    xianpaijianImg.addEventListener('dragstart', (e) => {
+      if (currentStep < 4) {
+        e.preventDefault();
+        console.log('❌ 请先完成铜丝并点击下一步，再使用线排剪');
+        return;
+      }
+      
+      e.dataTransfer.setData('text/plain', 'xianpaijian');
+      e.dataTransfer.effectAllowed = 'move';
+      console.log('✂️ 开始第一次拖拽线排剪');
+    });
+    
+    // 线排剪拖拽结束
+    xianpaijianImg.addEventListener('dragend', (e) => {
+        console.log('✂️ 线排剪拖拽结束');
+        
+        if (currentStep < 4) return;
+        
+        if (!isXianpaijianBeforeShown) {
+            // 第一次拖拽，显示第一类图片
+            console.log('🎯 第一次拖拽线排剪完成，显示第一类图片');
+            showBeforeImage();
+        } else if (isXianpaijianBeforeShown && !isXianpaijianBigActive) {
+            // 第二次拖拽到透明区域，显示大线排剪
+            console.log('🎯 第二次拖拽线排剪到透明区域');
+            showXianpaijianBig();
+        }
+        
+        // 线排剪归位
+        setTimeout(() => {
+            xianpaijianContainer.style.cssText = `
+                position: relative;
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                z-index: 30;
+                transform-origin: bottom center;
+                transform: rotate(0deg) translate(15px, -8px) !important;
+                margin-left: 5%;
+                --rotate: 0deg;
+            `;
+            
+            console.log('↩️ 线排剪已强制归位，可以再次拖动');
+        }, 50);
+    });
+    
+    // 显示第一类图片
+    function showBeforeImage() {
+      console.log('🔄 开始显示第一类图片...');
+      
+      isXianpaijianBeforeShown = true;
+      
+      // 1. 将goutiao替换成jianrong.png
+      if (resultShurongImg.src.includes('goutiao')) {
+        resultShurongImg.src = JIANRONG_IMG_PATH;
+        console.log('✅ goutiao已替换为 jianrong.png');
+      }
+      
+      // 2. 隐藏铜丝覆盖图片
+      if (copperOverlayImg.src) {
+        copperOverlayImg.style.display = 'none';
+        copperOverlayImg.classList.remove('fade-in');
+        copperOverlayImg.style.opacity = '0';
+        console.log('✅ tongsifugai.png已隐藏');
+      }
+      
+      // 3. 隐藏after图片
+      if (afterImg.src) {
+        afterImg.style.display = 'none';
+        afterImg.classList.remove('fade-in');
+        afterImg.style.opacity = '0';
+        console.log('✅ after图片已隐藏');
+      }
+      
+      // 4. 根据当前after图片显示对应的第一类图片
+      if (afterImg.src) {
+        const currentAfterPath = afterImg.src;
+        console.log(`📷 当前after图片路径: ${currentAfterPath}`);
+        
+        const fileName = getImageNameFromPath(currentAfterPath);
+        console.log(`📝 提取的文件名: ${fileName}`);
+        
+        const beforeFileName = beforeFileNameMap[fileName];
+        
+        if (beforeFileName) {
+          const beforeImgPath = "rh5/" + beforeFileName;
+          console.log(`🎨 根据文件名显示第一类图片: ${beforeImgPath}`);
+          
+          xianpaijianBeforeImg.src = beforeImgPath;
+          xianpaijianBeforeImg.style.display = 'block';
+          
+          setTimeout(() => {
+            xianpaijianBeforeImg.classList.add('fade-in');
+            console.log('✨ 第一类图片开始淡入');
+            
+            // 显示透明触发区域
+            triggerAreaTransparent.style.display = 'block';
+            console.log('🎯 透明触发区域已显示');
+            console.log('🔧 可以再次拖拽线排剪到透明区域');
+          }, 300);
+          
+          console.log(`✅ 已显示第一类图片: ${beforeImgPath}`);
+        } else {
+          console.log(`❌ 未找到对应的第一类图片 for fileName: ${fileName}`);
+        }
+      } else {
+        console.log('❌ 未检测到after图片，无法确定第一类图片');
+      }
+      
+      console.log('🎉 第一类图片显示完成！可以再次拖拽线排剪到透明区域');
+    }
+    
+    // 显示大线排剪
+    function showXianpaijianBig() {
+       console.log('🔧 显示大线排剪');
+       
+       xianpaijianBigImg.src = XIANPAIJIAN_BIG_IMG_PATH;
+       xianpaijianBigImg.classList.add('active');
+       xianpaijianBigImg.style.display = 'block';
+       
+       // 初始化位置
+       xianpaijianBigImg.style.top = '300px';
+       xianpaijianBigImg.style.left = '55%';
+       xianpaijianBigImg.style.transform = 'translateX(0)';
+       
+       isXianpaijianBigActive = true;
+       slideCount = 0;
+       
+       console.log('🔧 大线排剪已显示，可以在透明区域内上下滑动');
+    }
+    
+    // ========== 大线排剪滑动功能 ==========
+    
+    // 大线排剪鼠标事件
+    xianpaijianBigImg.addEventListener('mousedown', startDragXianpaijianBig);
+    document.addEventListener('mousemove', dragXianpaijianBig);
+    document.addEventListener('mouseup', stopDragXianpaijianBig);
+    
+    function startDragXianpaijianBig(e) {
+        if (!isXianpaijianBigActive) return;
+        
+        e.preventDefault();
+        isDraggingXianpaijianBig = true;
+        xianpaijianBigImg.classList.add('dragging');
+        xianpaijianBigStartY = e.clientY;
+        currentXianpaijianBigY = e.clientY;
+        
+        console.log('🖱️ 开始拖动大线排剪');
+    }
+    
+    function dragXianpaijianBig(e) {
+        if (!isDraggingXianpaijianBig || !isXianpaijianBigActive) return;
+        
+        e.preventDefault();
+        currentXianpaijianBigY = e.clientY;
+        
+        const triggerRect = triggerAreaTransparent.getBoundingClientRect();
+        
+        if (Math.abs(currentXianpaijianBigY - xianpaijianBigStartY) > 50) {
+            slideCount++;
+            console.log(`↕️ 大线排剪滑动检测到第 ${slideCount} 次滑动`);
+            
+            xianpaijianBigStartY = currentXianpaijianBigY;
+            
+            if (slideCount >= requiredSlides) {
+                showFinalImage();
+            }
+        }
+        
+        const deltaY = currentXianpaijianBigY - triggerRect.top - 50;
+        xianpaijianBigImg.style.transform = `translateX(-50%) translateY(${deltaY}px)`;
+    }
+    
+    function stopDragXianpaijianBig() {
+        if (!isDraggingXianpaijianBig) return;
+        
+        isDraggingXianpaijianBig = false;
+        xianpaijianBigImg.classList.remove('dragging');
+        xianpaijianBigImg.style.transform = 'translateX(-50%)';
+        
+        console.log('🛑 停止拖动大线排剪');
+    }
+    
+    // 显示最终图片 - 修改版本
+    function showFinalImage() {
+       if (!afterImg.src) {
+           console.log('❌ 未找到after图片，无法显示最终图片');
+           return;
+       }
+       
+       const currentAfterPath = afterImg.src;
+       console.log(`📷 当前after图片路径: ${currentAfterPath}`);
+       
+       const fileName = getImageNameFromPath(currentAfterPath);
+       console.log(`📝 提取的文件名: ${fileName}`);
+       
+       const finalFileName = finalFileNameMap[fileName];
+       
+       if (finalFileName) {
+           const finalImgPath = "rh5/" + finalFileName;
+           console.log(`🎨 根据文件名显示最终图片: ${finalImgPath}`);
+           
+           finalImg.src = finalImgPath;
+           finalImg.style.display = 'block';
+           finalImg.style.opacity = '0';
+           
+           // 隐藏大线排剪
+           xianpaijianBigImg.style.opacity = '0';
+           setTimeout(() => {
+               xianpaijianBigImg.classList.remove('active');
+               xianpaijianBigImg.style.display = 'none';
+           }, 300);
+           
+           // 隐藏透明区域
+           triggerAreaTransparent.style.opacity = '0';
+           setTimeout(() => {
+               triggerAreaTransparent.style.display = 'none';
+           }, 300);
+           
+           // 隐藏第一类图片
+           xianpaijianBeforeImg.style.opacity = '0';
+           setTimeout(() => {
+               xianpaijianBeforeImg.style.display = 'none';
+               xianpaijianBeforeImg.classList.remove('fade-in');
+           }, 300);
+           
+           // 淡入最终图片
+           setTimeout(() => {
+               finalImg.classList.add('fade-in');
+               console.log('✨ 最终图片开始淡入');
+               
+               isXianpaijianBigActive = false;
+               
+               // ========== 关键修改：剪刀完成后 ==========
+               // 设置一个特殊的状态标志
+               currentStep = 99; // 设置为一个完成状态，不与其他步骤冲突
+               
+               // 显示下一步按钮，但点击后不会隐藏
+               resultNextBtn.classList.add('active');
+               
+               // 在按钮上添加一个标记，表示这是最后一步
+               resultNextBtn.setAttribute('data-last-step', 'true');
+               
+               console.log('✅ 剪刀步骤完成，下一步按钮保持显示（点击将跳转到下一页面）');
+               
+           }, 500);
+           
+           console.log(`✅ 已显示最终图片: ${finalImgPath}`);
+       } else {
+           console.log(`❌ 未找到对应的最终图片 for fileName: ${fileName}`);
+       }
+    }
+    
+    // 透明区域拖拽支持
+    triggerAreaTransparent.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    });
+    
+    // 工具归位逻辑
+    document.querySelectorAll('.result-tool-img').forEach(toolImg => {
+      if (toolImg !== zongmaoshuaImg && toolImg !== tongsiImg && toolImg !== xianpaijianImg) {
+        toolImg.addEventListener('dragend', (e) => {
+          e.target.parentElement.style.transform = getComputedStyle(e.target.parentElement).transform;
+          console.log(`↩️ ${toolImg.alt}拖拽结束，已归位`);
+        });
+      }
+    });
+    
+    // ========== 页面初始化代码 ==========
+    window.addEventListener('load', function() {
+      console.log('📄 页面加载完成');
+      console.log('🎵 音乐图标已显示在背景图片右上角');
+      
+      const zi2Image = document.getElementById('zi2Image');
+      if (zi2Image) {
+        console.log('📍 zi2图片路径:', zi2Image.src);
+        
+        if (!zi2Image.src || zi2Image.src.includes(window.location.href)) {
+          zi2Image.src = "./zi2.png";
+          console.log('🔄 强制设置zi2图片路径');
+        }
+      }
+      
+      function checkImageExists(url, callback) {
+        var img = new Image();
+        img.onload = function() { callback(true); };
+        img.onerror = function() { callback(false); };
+        img.src = url;
+      }
+      
+      checkImageExists("./zi2.png", function(exists) {
+        console.log(exists ? '✅ zi2.png文件存在' : '❌ zi2.png文件不存在');
+      });
+      
+      // 确保音乐图标在结果页也正常显示
+      if (resultMusicIcon) {
+        // 设置结果页音乐图标位置，同样是相对于背景容器
+        resultMusicIcon.style.cssText = `
+          position: absolute !important;
+          top: 40px !important;
+          right: 40px !important;
+          width: 40px !important;
+          height: 40px !important;
+          background: url("./music.png") no-repeat center !important;
+          background-size: contain !important;
+          z-index: 9999 !important;
+          cursor: pointer !important;
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+        `;
+        
+        // 同步主页面音乐图标状态
+        if (mainMusicIcon) {
+          if (mainMusicIcon.classList.contains('music1')) {
+            resultMusicIcon.classList.add('music1');
+          }
+        }
+        
+        console.log('🎵 结果页音乐图标已设置完成');
+      }
+    });
+    
+    // ==================== 修复：为线团添加移动端触摸拖动支持 ====================
+    // 这些代码仅添加触摸支持，不修改任何原有功能
+    
+    // 为每个线团添加触摸拖动支持
+    allThreads.forEach(thread => {
+      // 只在移动端添加触摸拖动，不影响桌面端
+      let touchStartX, touchStartY;
+      let isTouchDragging = false;
+      let originalX, originalY;
+      
+      thread.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        
+        // 保存触摸开始位置
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        
+        // 保存原始位置
+        const rect = this.getBoundingClientRect();
+        originalX = rect.left;
+        originalY = rect.top;
+        
+        // 设置触摸状态
+        isTouchDragging = true;
+        currentThreadType = this.dataset.type;
+        
+        // 添加视觉反馈
+        this.style.opacity = '0.7';
+        this.style.zIndex = '1001';
+        this.style.transform = 'scale(0.95)';
+        
+        console.log(`👉 触摸开始拖动：${currentThreadType}线团`);
+      });
+      
+      thread.addEventListener('touchmove', function(e) {
+        if (!isTouchDragging) return;
+        e.preventDefault();
+        
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - touchStartX;
+        const deltaY = touch.clientY - touchStartY;
+        
+        // 移动线团跟随手指
+        this.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.95)`;
+        
+        // 检查是否移动到目标区域上方
+        checkTouchOverTarget(touch.clientX, touch.clientY);
+      });
+      
+      thread.addEventListener('touchend', function(e) {
+        if (!isTouchDragging) return;
+        e.preventDefault();
+        
+        const touch = e.changedTouches[0];
+        
+        // 重置样式
+        this.style.opacity = '';
+        this.style.zIndex = '';
+        this.style.transform = '';
+        
+        // 检查放置位置
+        checkTouchDrop(touch.clientX, touch.clientY, currentThreadType);
+        
+        // 重置状态
+        isTouchDragging = false;
+        console.log(`👋 触摸结束：${currentThreadType}线团`);
+      });
+    });
+    
+    // 检查触摸是否在目标区域上方
+    function checkTouchOverTarget(x, y) {
+      const targets = [triggerSide1, triggerSide2, triggerMiddle];
+      
+      targets.forEach(target => {
+        const rect = target.getBoundingClientRect();
+        if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+          target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+        } else {
+          target.style.backgroundColor = '';
+        }
+      });
+    }
+    
+    // 检查触摸放置位置并触发原有功能
+    function checkTouchDrop(x, y, threadType) {
+      if (!threadType) return;
+      
+      // 重置所有目标区域样式
+      [triggerSide1, triggerSide2, triggerMiddle].forEach(target => {
+        target.style.backgroundColor = '';
+      });
+      
+      // 检查是否放置到目标区域
+      const targets = [
+        { element: triggerSide1, type: 'side' },
+        { element: triggerSide2, type: 'side' },
+        { element: triggerMiddle, type: 'middle' }
+      ];
+      
+      targets.forEach(target => {
+        const rect = target.element.getBoundingClientRect();
+        
+        if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+          console.log(`🎯 线团放置到${target.type}区域`);
+          
+          // 触发原有的更新函数
+          if (target.type === 'side') {
+            debounceUpdateSide(threadType);
+          } else if (target.type === 'middle') {
+            debounceUpdateMiddle(threadType);
+          }
+        }
+      });
+      
+      // 重置当前线团类型
+      currentThreadType = '';
+    }
+    
+    // 为触发区域添加触摸反馈
+    [triggerSide1, triggerSide2, triggerMiddle].forEach(trigger => {
+      trigger.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        this.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+      });
+      
+      trigger.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        this.style.backgroundColor = '';
+      });
+    });
+    
+    // ==================== 为其他元素添加触摸支持 ====================
+    
+    // 为下一步按钮添加触摸支持
+    nextImg.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      nextImg.click();
+    });
+    
+    resultNextBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      resultNextBtn.click();
+    });
+    
+    // 为透明层添加触摸支持
+    coverTouming.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      coverTouming.click();
+    });
+    
+    resultCoverTouming.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      resultCoverTouming.click();
+    });
+    
+    // 为工具添加触摸支持
+    [zongmaoshuaImg, tongsiImg, xianpaijianImg].forEach(tool => {
+      tool.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        tool.click();
+      });
+    });
+    
+    // 为大线排剪添加触摸支持
+    xianpaijianBigImg.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      xianpaijianBigImg.click();
+    });
+    
+    // 为音乐图标添加触摸支持
+    mainMusicIcon.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      this.click();
+    });
+    
+    resultMusicIcon.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      this.click();
+    });
+    
+    // 阻止移动端默认滚动
+    document.addEventListener('touchmove', function(e) {
+      if (e.target.classList.contains('thread') || 
+          e.target.classList.contains('result-tool-img') ||
+          e.target.id === 'xianpaijianBigImg') {
+        e.preventDefault();
+      }
+    }, { passive: false });
+    
+    console.log('📱 移动端触屏功能已添加，线团可以触摸拖动');
+    
+    // ==================== 修复：确保结果页工具可用 ====================
+    // 在页面切换后重新绑定工具事件
+    
+    // 监听页面显示变化，确保结果页功能正常
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden && resultPage.style.display === 'block') {
+        console.log('🔍 结果页重新激活，确保功能正常');
+        
+        // 确保所有工具元素可见
+        [zongmaoshuaImg, tongsiImg, xianpaijianImg].forEach(tool => {
+          if (tool) {
+            tool.style.display = 'block';
+            tool.style.visibility = 'visible';
+            tool.style.opacity = '1';
+            tool.style.pointerEvents = 'auto';
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
